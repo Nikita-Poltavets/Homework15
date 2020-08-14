@@ -12,41 +12,25 @@ public class FieldInitializerImpl implements FieldInitializer {
 
     @Override
     public void initialize(Object object) throws Exception {
+        try(FileReader reader = new FileReader("app.properties")) {
+            Properties properties = new Properties();
+            properties.load(reader);
+            boolean isFieldPresentInProperties;
+            String getValueByKeyInProperties;
         Class<?> objectClass = object.getClass();
         for (Field field : objectClass.getDeclaredFields()) {
             if (field.isAnnotationPresent(PropertyKey.class)) {
                 PropertyKey propertyKey = field.getAnnotation(PropertyKey.class);
-                if(isFieldPresentInProperties(propertyKey.value())){
-                    field.set(object, getValueByKeyInProperties(propertyKey.value()));
+                isFieldPresentInProperties = properties.containsKey(propertyKey.value());
+                if(isFieldPresentInProperties){
+                    getValueByKeyInProperties = properties.getProperty(propertyKey.value());
+                    field.set(object, getConvertedVariable(getValueByKeyInProperties));
                 }
             }
         }
-    }
-
-    @Override
-    public Boolean isFieldPresentInProperties(String field){
-        try(FileReader reader = new FileReader("app.properties")) {
-            Properties properties = new Properties();
-            properties.load(reader);
-            Boolean isContainsField = properties.containsKey(field);
-            return isContainsField;
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
-    }
-
-    @Override
-    public Object getValueByKeyInProperties(String field){
-        try(FileReader reader = new FileReader("app.properties")) {
-            Properties properties = new Properties();
-            properties.load(reader);
-            String url = properties.getProperty(field);
-            return getConvertedVariable(url);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     @Override
