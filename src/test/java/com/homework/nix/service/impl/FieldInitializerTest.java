@@ -3,6 +3,9 @@ package com.homework.nix.service.impl;
 import com.homework.nix.data.AppProperties;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileReader;
+import java.util.Properties;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class FieldInitializerTest {
@@ -10,26 +13,20 @@ class FieldInitializerTest {
     FieldInitializerImpl fieldInitializer = new FieldInitializerImpl();
 
     @Test
-    void initialize() throws Exception {
-        AppProperties appProperties = new AppProperties();
-        double heightBeforeInitialize = appProperties.height;
-        fieldInitializer.initialize(appProperties);
-        double heightAfterInitialize = appProperties.height;
-        assertNotEquals(heightBeforeInitialize, heightAfterInitialize);
+    void initialize() {
+
+        try(FileReader reader = new FileReader("app.properties")) {
+            Properties properties = new Properties();
+            properties.load(reader);
+            String valueNameFromPropertiesFile = properties.getProperty("name");
+            AppProperties appProperties = new AppProperties();
+            fieldInitializer.initialize(appProperties);
+            String fieldNameAfterInitialize = appProperties.name;
+            assertEquals(fieldNameAfterInitialize, valueNameFromPropertiesFile);
+        }
+        catch (Exception ignored){}
     }
 
-    @Test
-    void isFieldPresentInProperties() {
-        String propertyKey = "name";
-        assertTrue(fieldInitializer.isFieldPresentInProperties(propertyKey));
-    }
-
-    @Test
-    void getProperty() {
-        int age = 37;
-        String stringAge = "age";
-        assertEquals(age, fieldInitializer.getValueByKeyInProperties(stringAge));
-    }
 
     @Test
     void getTypeOfNumeric() {
